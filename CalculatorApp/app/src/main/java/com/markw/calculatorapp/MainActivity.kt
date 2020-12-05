@@ -2,11 +2,16 @@ package com.markw.calculatorapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import java.lang.NumberFormatException
+
+private const val STATE_PENDING_OPERATION = "PendingOperation"
+private const val STATE_OPERAND1 = "Operand1"
+private const val STATE_OPERAND1_WAS_STORED = "Operand1wasStored"
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,6 +87,28 @@ class MainActivity : AppCompatActivity() {
         buttonMultiply.setOnClickListener(operationButtonListener)
         buttonSubtract.setOnClickListener(operationButtonListener)
         buttonAdd.setOnClickListener(operationButtonListener)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION, "")
+        if (savedInstanceState.getBoolean(STATE_OPERAND1_WAS_STORED, false)) {
+            operand1 = savedInstanceState.getDouble(STATE_OPERAND1)
+        } else {
+            operand1 = null
+        }
+        displayOperation.text = pendingOperation
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_PENDING_OPERATION, pendingOperation)
+        if (operand1 != null) {
+            outState.putDouble(STATE_OPERAND1, operand1!!)
+            outState.putBoolean(STATE_OPERAND1_WAS_STORED, true)
+        } else {
+            outState.putBoolean(STATE_OPERAND1_WAS_STORED, false)
+        }
     }
 
     private fun performOperation(value: Double, operation: String) {
