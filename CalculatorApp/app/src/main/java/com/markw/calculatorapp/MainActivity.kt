@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import java.lang.NumberFormatException
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,7 +17,6 @@ class MainActivity : AppCompatActivity() {
 
     // variables to hold the operands and type of calculation
     private var operand1: Double? = null
-    private var operand2: Double = 0.0
     private var pendingOperation = "="
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,9 +67,11 @@ class MainActivity : AppCompatActivity() {
 
         val operationButtonListener = View.OnClickListener { v ->
             val op = (v as Button).text.toString()
-            val value = newNumberText.text.toString()
-            if (value.isNotEmpty()) {
+            try {
+                val value = newNumberText.text.toString().toDouble()
                 performOperation(value, op)
+            } catch (e: NumberFormatException) {
+                newNumberText.setText("")
             }
             pendingOperation = op
             displayOperation.text = pendingOperation
@@ -82,12 +84,12 @@ class MainActivity : AppCompatActivity() {
         buttonAdd.setOnClickListener(operationButtonListener)
     }
 
-    private fun performOperation(value: String, operation: String) {
+    private fun performOperation(value: Double, operation: String) {
 
         if (operand1 == null) {
             operand1 = value.toDouble()
         } else {
-            operand2 = value.toDouble()
+            var operand2 = value.toDouble()
 
             // perform the operation on the 2 operands
             if (pendingOperation == "=") {
@@ -97,11 +99,11 @@ class MainActivity : AppCompatActivity() {
             // similar to a switch
             when (pendingOperation) {
                 "=" -> operand1 = operand2
-                "/" -> if (operand2 == 0.0) {
-                        operand1 = Double.NaN // divide by zero
-                    } else {
-                        operand1 = operand1!! / operand2
-                    }
+                "/" -> operand1 = if (operand2 == 0.0) {
+                                    Double.NaN // divide by zero
+                                } else {
+                                    operand1!! / operand2
+                                }
                 "*" -> operand1 = operand1!! * operand2
                 "-" -> operand1 = operand1!! - operand2
                 "+" -> operand1 = operand1!! + operand2
