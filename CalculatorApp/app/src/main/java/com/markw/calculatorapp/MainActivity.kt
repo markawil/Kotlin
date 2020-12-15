@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import java.lang.NumberFormatException
+import kotlinx.android.synthetic.main.activity_main.*
 
 private const val STATE_PENDING_OPERATION = "PendingOperation"
 private const val STATE_OPERAND1 = "Operand1"
@@ -15,42 +16,15 @@ private const val STATE_OPERAND1_WAS_STORED = "Operand1wasStored"
 
 class MainActivity : AppCompatActivity() {
 
-    // allows later initialization and preventing use of a nullable (optional)
-    private lateinit var resultText: EditText
-    private lateinit var newNumberText: EditText
-    private val displayOperation by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.operationTextView) }
-
     // variables to hold the operands and type of calculation
     private var operand1: Double? = null
     private var pendingOperation = "="
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
-
-        resultText = findViewById(R.id.resultTextView)
-        newNumberText = findViewById(R.id.newNumberText)
-        displayOperation.text = ""
-
-        // Data input (operand) buttons
-        val button0: Button = findViewById(R.id.button0)
-        val button1: Button = findViewById(R.id.button1)
-        val button2: Button = findViewById(R.id.button2)
-        val button3: Button = findViewById(R.id.button3)
-        val button4: Button = findViewById(R.id.button4)
-        val button5: Button = findViewById(R.id.button5)
-        val button6: Button = findViewById(R.id.button6)
-        val button7: Button = findViewById(R.id.button7)
-        val button8: Button = findViewById(R.id.button8)
-        val button9: Button = findViewById(R.id.button9)
-        val buttonDecimal: Button = findViewById(R.id.buttonDecimal)
-
-        // Operation buttons
-        val buttonEquals = findViewById<Button>(R.id.buttonEquals)
-        val buttonDivide = findViewById<Button>(R.id.buttonDivide)
-        val buttonMultiply = findViewById<Button>(R.id.buttonMultiply)
-        val buttonAdd = findViewById<Button>(R.id.buttonAddition)
-        val buttonSubtract = findViewById<Button>(R.id.buttonMinus)
+        operationTextView.text = ""
 
         val operandButtonListener = View.OnClickListener { v ->
             val button = v as Button
@@ -79,14 +53,30 @@ class MainActivity : AppCompatActivity() {
                 newNumberText.setText("")
             }
             pendingOperation = op
-            displayOperation.text = pendingOperation
+            operationTextView.text = pendingOperation
         }
 
         buttonEquals.setOnClickListener(operationButtonListener)
         buttonDivide.setOnClickListener(operationButtonListener)
         buttonMultiply.setOnClickListener(operationButtonListener)
-        buttonSubtract.setOnClickListener(operationButtonListener)
-        buttonAdd.setOnClickListener(operationButtonListener)
+        buttonMinus.setOnClickListener(operationButtonListener)
+        buttonAddition.setOnClickListener(operationButtonListener)
+
+        buttonNeg.setOnClickListener({ view ->
+            val value = newNumberText.text.toString()
+            if (value.isEmpty()) {
+                newNumberText.setText("-")
+            } else {
+                try {
+                    var doubleValue = value.toDouble()
+                    doubleValue *= -1
+                    newNumberText.setText(doubleValue.toString())
+                } catch (e: NumberFormatException) {
+                    // can't set a negative value on nothing on "-" or "."
+                    newNumberText.setText("")
+                }
+            }
+        })
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -97,7 +87,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             operand1 = null
         }
-        displayOperation.text = pendingOperation
+        operationTextView.text = pendingOperation
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -137,7 +127,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        resultText.setText(operand1.toString())
+        resultTextView.setText(operand1.toString())
         newNumberText.setText("")  // clear it out
     }
 }
